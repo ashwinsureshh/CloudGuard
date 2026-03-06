@@ -1,6 +1,7 @@
 version: '3.8'
 
 services:
+
   zookeeper:
     image: confluentinc/cp-zookeeper:7.4.0
     environment:
@@ -14,11 +15,18 @@ services:
     depends_on:
       - zookeeper
     ports:
-      - "9092:9092"
+      - "9092:9092"   # internal (container-to-container)
+      - "29092:29092" # external (host machine — Mac / Windows)
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
-      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      # Two listeners:
+      #   PLAINTEXT     → used by other containers  (kafka:9092)
+      #   PLAINTEXT_HOST → used by the host machine (localhost:29092)
+      KAFKA_LISTENERS: PLAINTEXT://0.0.0.0:9092,PLAINTEXT_HOST://0.0.0.0:29092
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092,PLAINTEXT_HOST://localhost:29092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
       KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
 
   backend:
@@ -28,9 +36,14 @@ services:
     depends_on:
       - kafka
     environment:
+      # Inside Docker, talk to Kafka via the internal listener
       - KAFKA_BROKER=kafka:9092
     volumes:
+      # Drop model artefacts into backend/model/ on the host;
+      # they will be available inside the container automatically.
       - ./backend/model:/app/model
+      # Persist the SQLite database on the host so alerts survive restarts
+      - ./backend/cloudguard.db:/app/cloudguard.db
 
   frontend:
     build: ./frontend
