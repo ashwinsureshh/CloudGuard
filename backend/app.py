@@ -48,11 +48,12 @@ _recent_lock   = threading.Lock()
 def process_flow(flow: dict):
     """Classify one network flow, persist it, and push to connected clients."""
     prediction = predict(flow)
+    ts = flow.get("timestamp", datetime.now().strftime("%H:%M:%S"))
 
     alert = {
-        "timestamp":   flow.get("timestamp", datetime.now().strftime("%H:%M:%S")),
-        "src_ip":      flow.get("src_ip",    "unknown"),
-        "dst_ip":      flow.get("dst_ip",    "unknown"),
+        "timestamp":   ts,
+        "src_ip":      flow.get("src_ip",  "unknown"),
+        "dst_ip":      flow.get("dst_ip",  "unknown"),
         "src_port":    flow.get("src_port"),
         "dst_port":    flow.get("dst_port"),
         "protocol":    flow.get("protocol"),
@@ -60,6 +61,8 @@ def process_flow(flow: dict):
         "confidence":  prediction["confidence"],
         "severity":    prediction["severity"],
         "is_attack":   prediction["is_attack"],
+        # Stable unique key for React — avoids undefined key={a.id} in Dashboard.jsx
+        "id":          f"{ts}_{flow.get('src_ip', '')}_{flow.get('dst_port', '')}",
     }
 
     try:
