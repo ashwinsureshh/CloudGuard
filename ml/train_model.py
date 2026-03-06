@@ -12,7 +12,7 @@ from sklearn.model_selection import train_test_split
 from sklearn.metrics import classification_report, confusion_matrix
 from preprocess import preprocess, scale_features
 
-MODEL_PATH = "model/"
+MODEL_PATH = "../backend/model/"
 
 def train(data_file="traffic.csv"):
     df, le = preprocess(data_file)
