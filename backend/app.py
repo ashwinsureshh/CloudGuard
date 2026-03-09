@@ -33,7 +33,7 @@ logger = logging.getLogger(__name__)
 # ── Flask / SocketIO ───────────────────────────────────────────────────────────
 app = Flask(__name__)
 CORS(app)
-socketio = SocketIO(app, cors_allowed_origins="*")
+socketio = SocketIO(app, cors_allowed_origins="*", async_mode='threading')
 
 # ── Config (overridable via environment variables) ─────────────────────────────
 KAFKA_BROKER = os.environ.get("KAFKA_BROKER", "localhost:9092")
@@ -197,4 +197,4 @@ def _startup():
 if __name__ == "__main__":
     _startup()
     logger.info("CloudGuard API running at http://0.0.0.0:5001")
-    socketio.run(app, host="0.0.0.0", port=5001, debug=False)
+    socketio.run(app, host="0.0.0.0", port=5001, debug=False, allow_unsafe_werkzeug=True)
