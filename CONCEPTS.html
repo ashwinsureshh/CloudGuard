@@ -1,0 +1,1205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>CloudGuard — Project Concepts Guide</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap');
+
+  :root {
+    --primary:   #4f46e5;
+    --primary-light: #eef2ff;
+    --success:   #059669;
+    --success-light: #d1fae5;
+    --warning:   #d97706;
+    --warning-light: #fef3c7;
+    --danger:    #dc2626;
+    --danger-light: #fee2e2;
+    --info:      #0891b2;
+    --info-light: #e0f2fe;
+    --gray-50:   #f9fafb;
+    --gray-100:  #f3f4f6;
+    --gray-200:  #e5e7eb;
+    --gray-400:  #9ca3af;
+    --gray-600:  #4b5563;
+    --gray-700:  #374151;
+    --gray-800:  #1f2937;
+    --gray-900:  #111827;
+    --code-bg:   #1e2433;
+    --code-text: #e2e8f0;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Inter', -apple-system, sans-serif;
+    background: #f0f4f8;
+    color: var(--gray-800);
+    line-height: 1.7;
+    font-size: 15px;
+  }
+
+  /* ── Page wrapper ── */
+  .page {
+    max-width: 900px;
+    margin: 40px auto;
+    background: white;
+    border-radius: 16px;
+    box-shadow: 0 4px 40px rgba(0,0,0,0.10);
+    overflow: hidden;
+  }
+
+  /* ── Cover ── */
+  .cover {
+    background: linear-gradient(135deg, #1e1b4b 0%, #312e81 40%, #4338ca 100%);
+    padding: 60px 64px 52px;
+    color: white;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -80px; right: -80px;
+    width: 320px; height: 320px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.05);
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -60px; left: 60px;
+    width: 200px; height: 200px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.04);
+  }
+  .cover-badge {
+    display: inline-block;
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    border-radius: 20px;
+    padding: 4px 14px;
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.8px;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .cover h1 {
+    font-size: 42px;
+    font-weight: 800;
+    letter-spacing: -1px;
+    line-height: 1.15;
+    margin-bottom: 14px;
+  }
+  .cover h1 span { color: #a5b4fc; }
+  .cover-sub {
+    font-size: 16px;
+    color: rgba(255,255,255,0.70);
+    max-width: 520px;
+    margin-bottom: 36px;
+    font-weight: 400;
+  }
+  .cover-tags { display: flex; gap: 10px; flex-wrap: wrap; }
+  .tag {
+    background: rgba(255,255,255,0.12);
+    border: 1px solid rgba(255,255,255,0.20);
+    border-radius: 8px;
+    padding: 5px 12px;
+    font-size: 12px;
+    font-weight: 500;
+  }
+
+  /* ── TOC ── */
+  .toc {
+    background: var(--gray-50);
+    border-bottom: 1px solid var(--gray-200);
+    padding: 32px 64px;
+  }
+  .toc h2 {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1.2px;
+    text-transform: uppercase;
+    color: var(--gray-400);
+    margin-bottom: 16px;
+  }
+  .toc-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px 32px;
+  }
+  .toc-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--gray-700);
+    font-size: 13.5px;
+    padding: 5px 0;
+    border-bottom: 1px solid transparent;
+    transition: color 0.15s;
+  }
+  .toc-item:hover { color: var(--primary); }
+  .toc-num {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary);
+    background: var(--primary-light);
+    border-radius: 5px;
+    padding: 2px 7px;
+    min-width: 26px;
+    text-align: center;
+  }
+
+  /* ── Content area ── */
+  .content { padding: 0 64px 64px; }
+
+  /* ── Section ── */
+  .section { padding-top: 52px; }
+  .section-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 16px;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid var(--gray-100);
+  }
+  .section-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .icon-purple { background: var(--primary-light); }
+  .icon-green  { background: var(--success-light); }
+  .icon-yellow { background: var(--warning-light); }
+  .icon-blue   { background: var(--info-light); }
+  .icon-red    { background: var(--danger-light); }
+  .icon-gray   { background: var(--gray-100); }
+
+  .section-title { font-size: 22px; font-weight: 700; color: var(--gray-900); letter-spacing: -0.3px; }
+  .section-subtitle { font-size: 13.5px; color: var(--gray-400); font-weight: 400; margin-top: 2px; }
+
+  p { margin-bottom: 14px; color: var(--gray-700); }
+
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--gray-900);
+    margin: 28px 0 10px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  h3::before {
+    content: '';
+    width: 3px; height: 16px;
+    background: var(--primary);
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  /* ── Code block ── */
+  .code-block {
+    background: var(--code-bg);
+    border-radius: 12px;
+    padding: 20px 24px;
+    margin: 14px 0 20px;
+    overflow-x: auto;
+    position: relative;
+  }
+  .code-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.8px;
+    font-weight: 500;
+    color: #64748b;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  pre {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 13px;
+    line-height: 1.7;
+    color: var(--code-text);
+    white-space: pre;
+  }
+  .kw  { color: #c792ea; }   /* keyword */
+  .fn  { color: #82aaff; }   /* function */
+  .st  { color: #c3e88d; }   /* string */
+  .cm  { color: #546e7a; font-style: italic; } /* comment */
+  .nm  { color: #f78c6c; }   /* number */
+  .cl  { color: #ffcb6b; }   /* class/type */
+
+  /* ── Callout boxes ── */
+  .callout {
+    border-radius: 10px;
+    padding: 16px 20px;
+    margin: 16px 0;
+    display: flex;
+    gap: 14px;
+    align-items: flex-start;
+  }
+  .callout-icon { font-size: 18px; flex-shrink: 0; margin-top: 1px; }
+  .callout-body { flex: 1; }
+  .callout-title { font-weight: 700; font-size: 13.5px; margin-bottom: 4px; }
+  .callout-text  { font-size: 13.5px; color: var(--gray-700); margin: 0; line-height: 1.6; }
+
+  .callout-info    { background: var(--info-light);    border-left: 3px solid var(--info); }
+  .callout-warning { background: var(--warning-light); border-left: 3px solid var(--warning); }
+  .callout-success { background: var(--success-light); border-left: 3px solid var(--success); }
+  .callout-danger  { background: var(--danger-light);  border-left: 3px solid var(--danger); }
+
+  .callout-info    .callout-title { color: var(--info); }
+  .callout-warning .callout-title { color: var(--warning); }
+  .callout-success .callout-title { color: var(--success); }
+  .callout-danger  .callout-title { color: var(--danger); }
+
+  /* ── Table ── */
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 16px 0 20px;
+    font-size: 13.5px;
+    border-radius: 10px;
+    overflow: hidden;
+    border: 1px solid var(--gray-200);
+  }
+  thead tr { background: var(--gray-800); color: white; }
+  thead th { padding: 11px 16px; text-align: left; font-weight: 600; font-size: 12px; letter-spacing: 0.3px; }
+  tbody tr { border-bottom: 1px solid var(--gray-100); }
+  tbody tr:last-child { border-bottom: none; }
+  tbody tr:nth-child(even) { background: var(--gray-50); }
+  tbody td { padding: 10px 16px; color: var(--gray-700); vertical-align: top; }
+  tbody td:first-child { font-weight: 500; color: var(--gray-900); }
+  code {
+    font-family: 'JetBrains Mono', monospace;
+    background: var(--gray-100);
+    color: var(--primary);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-size: 12.5px;
+  }
+
+  /* ── Flow diagram ── */
+  .flow {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin: 20px 0;
+    flex-wrap: wrap;
+  }
+  .flow-step {
+    background: var(--primary-light);
+    border: 1.5px solid #c7d2fe;
+    border-radius: 10px;
+    padding: 12px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    text-align: center;
+    flex: 1;
+    min-width: 110px;
+  }
+  .flow-arrow {
+    color: var(--gray-400);
+    font-size: 20px;
+    padding: 0 4px;
+    flex-shrink: 0;
+  }
+
+  /* ── Architecture box ── */
+  .arch-box {
+    background: var(--code-bg);
+    border-radius: 12px;
+    padding: 24px 28px;
+    margin: 16px 0 20px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 12.5px;
+    line-height: 1.9;
+    color: #94a3b8;
+    overflow-x: auto;
+  }
+  .arch-box .hi  { color: #a5b4fc; font-weight: 600; }
+  .arch-box .hg  { color: #6ee7b7; }
+  .arch-box .hy  { color: #fde68a; }
+  .arch-box .hr  { color: #fca5a5; }
+
+  /* ── Step list ── */
+  .steps { margin: 16px 0; }
+  .step {
+    display: flex;
+    gap: 16px;
+    align-items: flex-start;
+    margin-bottom: 14px;
+  }
+  .step-num {
+    width: 28px; height: 28px;
+    background: var(--primary);
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+  .step-body { flex: 1; }
+  .step-title { font-weight: 600; font-size: 14px; margin-bottom: 3px; }
+  .step-desc  { font-size: 13.5px; color: var(--gray-600); }
+
+  /* ── Comparison grid ── */
+  .compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .compare-card {
+    border-radius: 10px;
+    padding: 16px 18px;
+    border: 1.5px solid var(--gray-200);
+  }
+  .compare-card.good { border-color: #6ee7b7; background: #f0fdf4; }
+  .compare-card.bad  { border-color: #fca5a5; background: #fff5f5; }
+  .compare-card h4   { font-size: 13px; font-weight: 700; margin-bottom: 8px; }
+  .compare-card.good h4 { color: var(--success); }
+  .compare-card.bad  h4 { color: var(--danger); }
+  .compare-card p    { font-size: 13px; margin: 0; color: var(--gray-700); line-height: 1.6; }
+
+  /* ── Divider ── */
+  .divider {
+    height: 1px;
+    background: var(--gray-100);
+    margin: 8px 0;
+  }
+
+  /* ── Inline highlight ── */
+  .hl-purple { background: var(--primary-light); color: var(--primary); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 13px; }
+  .hl-green  { background: var(--success-light); color: var(--success); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 13px; }
+  .hl-yellow { background: var(--warning-light); color: var(--warning); padding: 1px 6px; border-radius: 4px; font-weight: 600; font-size: 13px; }
+
+  /* ── Glossary ── */
+  .glossary { columns: 2; gap: 24px; margin: 16px 0; }
+  .gloss-item { break-inside: avoid; margin-bottom: 12px; }
+  .gloss-term { font-weight: 700; font-size: 13.5px; color: var(--gray-900); }
+  .gloss-def  { font-size: 13px; color: var(--gray-600); line-height: 1.5; }
+
+  /* ── Footer ── */
+  .footer {
+    background: var(--gray-800);
+    color: var(--gray-400);
+    text-align: center;
+    padding: 24px;
+    font-size: 12.5px;
+  }
+  .footer strong { color: white; }
+
+  /* ── Print / PDF ── */
+  @media print {
+    body { background: white; }
+    .page { box-shadow: none; margin: 0; border-radius: 0; }
+    a { color: inherit; text-decoration: none; }
+  }
+</style>
+</head>
+<body>
+<div class="page">
+
+  <!-- ════════════════════ COVER ════════════════════ -->
+  <div class="cover">
+    <div class="cover-badge">Cloud Computing — B22EF0604</div>
+    <h1>🛡️ Cloud<span>Guard</span></h1>
+    <p class="cover-sub">
+      A complete guide to how this real-time network intrusion detection
+      system works — from raw dataset to live browser dashboard.
+    </p>
+    <div class="cover-tags">
+      <span class="tag">Machine Learning</span>
+      <span class="tag">Apache Kafka</span>
+      <span class="tag">Flask + WebSockets</span>
+      <span class="tag">React</span>
+      <span class="tag">Docker</span>
+      <span class="tag">CIC-IDS2017 Dataset</span>
+    </div>
+  </div>
+
+  <!-- ════════════════════ TOC ════════════════════ -->
+  <div class="toc">
+    <h2>Contents</h2>
+    <div class="toc-grid">
+      <a href="#s1" class="toc-item"><span class="toc-num">01</span> What Problem Are We Solving?</a>
+      <a href="#s2" class="toc-item"><span class="toc-num">02</span> System Architecture</a>
+      <a href="#s3" class="toc-item"><span class="toc-num">03</span> Network Intrusion Detection</a>
+      <a href="#s4" class="toc-item"><span class="toc-num">04</span> ML Pipeline — preprocess.py</a>
+      <a href="#s5" class="toc-item"><span class="toc-num">05</span> ML Pipeline — train_model.py</a>
+      <a href="#s6" class="toc-item"><span class="toc-num">06</span> Apache Kafka</a>
+      <a href="#s7" class="toc-item"><span class="toc-num">07</span> Backend API — app.py</a>
+      <a href="#s8" class="toc-item"><span class="toc-num">08</span> REST APIs vs WebSockets</a>
+      <a href="#s9" class="toc-item"><span class="toc-num">09</span> Frontend Dashboard</a>
+      <a href="#s10" class="toc-item"><span class="toc-num">10</span> Docker &amp; Docker Compose</a>
+      <a href="#s11" class="toc-item"><span class="toc-num">11</span> End-to-End Data Flow</a>
+      <a href="#s12" class="toc-item"><span class="toc-num">12</span> Glossary</a>
+    </div>
+  </div>
+
+  <div class="content">
+
+    <!-- ══════════ SECTION 1 ══════════ -->
+    <div class="section" id="s1">
+      <div class="section-header">
+        <div class="section-icon icon-red">🎯</div>
+        <div>
+          <div class="section-title">What Problem Are We Solving?</div>
+          <div class="section-subtitle">The motivation behind CloudGuard</div>
+        </div>
+      </div>
+
+      <p>Cloud applications run on networks. Every API call, login, and file transfer is a
+      <strong>network flow</strong> — a packet of data travelling between machines. Most traffic is
+      normal, but some is malicious. A traditional firewall blocks <em>known</em> bad IPs, but
+      modern attacks come from new sources, use legitimate-looking patterns, and evolve constantly.</p>
+
+      <h3>Types of attacks CloudGuard detects</h3>
+      <table>
+        <thead><tr><th>Attack</th><th>What the attacker does</th><th>What it looks like in traffic</th></tr></thead>
+        <tbody>
+          <tr><td>DDoS</td><td>Floods the server with millions of fake requests to crash it</td><td>Huge spike in incoming packets, tiny responses</td></tr>
+          <tr><td>PortScan</td><td>Probes your machine to find open "doors" (services)</td><td>Many very short connections to different ports</td></tr>
+          <tr><td>BruteForce</td><td>Tries thousands of passwords per second (SSH, RDP)</td><td>Many repeated connections to port 22/3389, mostly rejected</td></tr>
+          <tr><td>Infiltration</td><td>An attacker with partial access tries to move deeper</td><td>Unusual internal traffic patterns</td></tr>
+          <tr><td>BENIGN</td><td>Normal users browsing, calling APIs, downloading files</td><td>Balanced packet counts, normal durations</td></tr>
+        </tbody>
+      </table>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <div class="callout-title">CloudGuard's approach</div>
+          <p class="callout-text">Train a machine learning model on millions of <em>labelled</em> historical
+          network flows (already marked as attack or benign), then run that model on live traffic and
+          alert the security team in real time — even for attack patterns never explicitly programmed.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 2 ══════════ -->
+    <div class="section" id="s2">
+      <div class="section-header">
+        <div class="section-icon icon-purple">🏗️</div>
+        <div>
+          <div class="section-title">System Architecture</div>
+          <div class="section-subtitle">The big picture — how all pieces connect</div>
+        </div>
+      </div>
+
+      <div class="arch-box">
+<span class="hi">┌──────────────────────────────────────────────────────────────┐</span>
+<span class="hi">│                  CloudGuard — Full Pipeline                   │</span>
+<span class="hi">└──────────────────────────────────────────────────────────────┘</span>
+
+<span class="hy">  CIC-IDS2017 Dataset (CSV)</span>
+         │
+         ▼
+<span class="hg">  ml/preprocess.py</span>      ← clean, scale, encode labels
+         │
+         ▼
+<span class="hg">  ml/train_model.py</span>     ← train RandomForest → save model.pkl
+         │
+         ▼  (copy .pkl files to backend/model/)
+         │
+<span class="hi">  ┌──────────────────┐        ┌─────────────────────┐</span>
+<span class="hi">  │  kafka_producer  │──────▶│   Apache Kafka      │</span>
+<span class="hi">  │  (streams flows) │        │  topic: network-flows│</span>
+<span class="hi">  └──────────────────┘        └──────────┬──────────┘</span>
+                                          │
+                                          ▼
+<span class="hr">                               backend/app.py</span>  ← Flask + SocketIO
+                               loads model.pkl
+                               runs predictions
+                                          │
+                          ┌───────────────┼───────────────┐
+                          │               │               │
+                     <span class="hy">HTTP REST</span>     <span class="hy">WebSocket</span>      <span class="hy">push events</span>
+                          │               │
+                          ▼               ▼
+<span class="hg">                     frontend/src/App.js  →  Dashboard.jsx</span>
+                     (React browser UI — live charts + alerts)
+      </div>
+
+      <div class="flow">
+        <div class="flow-step">📊 Dataset</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">🧹 Preprocess</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">🤖 Train Model</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">📡 Kafka Stream</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">🔥 Flask API</div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">🖥️ Dashboard</div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 3 ══════════ -->
+    <div class="section" id="s3">
+      <div class="section-header">
+        <div class="section-icon icon-red">🌐</div>
+        <div>
+          <div class="section-title">Network Intrusion Detection</div>
+          <div class="section-subtitle">Core concept — what is a network flow?</div>
+        </div>
+      </div>
+
+      <p>A network flow is a <strong>statistical summary</strong> of a connection between two machines.
+      Instead of logging every byte (terabytes of data), we log a summary of what happened:</p>
+
+      <div class="code-block">
+        <div class="code-label">example flow record</div>
+        <pre><span class="cm"># A BruteForce SSH attempt looks like this:</span>
+src_ip       = <span class="st">"192.168.1.101"</span>  <span class="cm"># attacker's IP</span>
+dst_port     = <span class="nm">22</span>               <span class="cm"># SSH port</span>
+duration     = <span class="nm">0.003</span>            <span class="cm"># connection lasted 3ms (rejected fast)</span>
+fwd_packets  = <span class="nm">450</span>             <span class="cm"># attacker sent many packets</span>
+bwd_packets  = <span class="nm">2</span>               <span class="cm"># server barely replied (wrong password)</span>
+flag_count   = <span class="nm">8</span>               <span class="cm"># many TCP RST flags (reset connections)</span>
+
+<span class="cm"># A human logging in normally looks like this:</span>
+dst_port     = <span class="nm">22</span>
+duration     = <span class="nm">45.2</span>            <span class="cm"># session lasted 45 seconds</span>
+fwd_packets  = <span class="nm">12</span>              <span class="cm"># typed a few commands</span>
+bwd_packets  = <span class="nm">10</span>              <span class="cm"># server responded normally</span></pre>
+      </div>
+
+      <p>The ML model learns these <strong>statistical fingerprints</strong> for each attack type from
+      millions of labelled examples in the CIC-IDS2017 dataset.</p>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">📦</span>
+        <div class="callout-body">
+          <div class="callout-title">CIC-IDS2017 Dataset</div>
+          <p class="callout-text">Created by the Canadian Institute for Cybersecurity. Contains ~2.8 million
+          labelled network flows, 7 attack categories + benign traffic, and 80+ features per flow
+          (packet size stats, timing, TCP flag counts, etc.). The standard academic benchmark for IDS research.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 4 ══════════ -->
+    <div class="section" id="s4">
+      <div class="section-header">
+        <div class="section-icon icon-green">🧹</div>
+        <div>
+          <div class="section-title">ML Pipeline — preprocess.py</div>
+          <div class="section-subtitle">Cleaning and preparing raw data for training</div>
+        </div>
+      </div>
+
+      <h3>Step 1 — Drop bad rows</h3>
+      <div class="code-block">
+        <div class="code-label">ml/preprocess.py</div>
+        <pre><span class="kw">def</span> <span class="fn">clean_data</span>(df):
+    df = df.<span class="fn">drop_duplicates</span>()                   <span class="cm"># remove exact duplicate rows</span>
+    df = df.<span class="fn">replace</span>([np.inf, -np.inf], np.nan)  <span class="cm"># infinity → NaN</span>
+    df = df.<span class="fn">dropna</span>()                            <span class="cm"># drop rows with missing values</span>
+    <span class="kw">return</span> df</pre>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">⚠️</span>
+        <div class="callout-body">
+          <div class="callout-title">Why do infinite values appear?</div>
+          <p class="callout-text">Some features are ratios (e.g., bytes per second). If a connection lasted
+          0 seconds, that's division by zero → infinity. These rows are mathematically broken and
+          must be removed before training.</p>
+        </div>
+      </div>
+
+      <h3>Step 2 — Encode text labels to numbers</h3>
+      <div class="code-block">
+        <div class="code-label">ml/preprocess.py</div>
+        <pre><span class="fn">LabelEncoder</span>().fit_transform(df[<span class="st">"Label"</span>])
+
+<span class="cm"># Converts:</span>
+<span class="st">"BENIGN"</span>       → <span class="nm">0</span>
+<span class="st">"BruteForce"</span>   → <span class="nm">1</span>
+<span class="st">"DDoS"</span>         → <span class="nm">2</span>
+<span class="st">"Infiltration"</span> → <span class="nm">3</span>
+<span class="st">"PortScan"</span>     → <span class="nm">4</span></pre>
+      </div>
+      <p>ML models only understand numbers — not strings. LabelEncoder assigns an integer to each unique class name.</p>
+
+      <h3>Step 3 — Normalise feature values (StandardScaler)</h3>
+      <div class="code-block">
+        <div class="code-label">ml/preprocess.py</div>
+        <pre><span class="fn">scaler</span> = <span class="cl">StandardScaler</span>()
+X_train_scaled = scaler.<span class="fn">fit_transform</span>(X_train)  <span class="cm"># compute mean/std FROM training data</span>
+X_test_scaled  = scaler.<span class="fn">transform</span>(X_test)       <span class="cm"># apply SAME mean/std to test data</span></pre>
+      </div>
+
+      <div class="compare">
+        <div class="compare-card bad">
+          <h4>❌ Without scaling</h4>
+          <p><code>packet_size</code> ranges 0–65535<br>
+          <code>flag_count</code> ranges 0–5<br><br>
+          The model focuses almost entirely on packet_size because its numbers are bigger — even if flag_count is more informative.</p>
+        </div>
+        <div class="compare-card good">
+          <h4>✅ With StandardScaler</h4>
+          <p>Both features rescaled to mean=0, std=1.<br><br>
+          Every feature gets an equal chance to influence the model. Training is faster and more accurate.</p>
+        </div>
+      </div>
+
+      <div class="callout callout-danger">
+        <span class="callout-icon">🚨</span>
+        <div class="callout-body">
+          <div class="callout-title">Critical rule — never refit on test data</div>
+          <p class="callout-text"><code>fit_transform</code> computes mean/std and applies it.
+          <code>transform</code> only applies — it does NOT recompute. If you refit the scaler
+          on test data, you're using "future information" during training. This is called
+          <strong>data leakage</strong> and makes your accuracy numbers fake.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 5 ══════════ -->
+    <div class="section" id="s5">
+      <div class="section-header">
+        <div class="section-icon icon-green">🤖</div>
+        <div>
+          <div class="section-title">ML Pipeline — train_model.py</div>
+          <div class="section-subtitle">Training the Random Forest classifier</div>
+        </div>
+      </div>
+
+      <h3>Train / Test Split</h3>
+      <div class="code-block">
+        <div class="code-label">ml/train_model.py</div>
+        <pre>X_train, X_test, y_train, y_test = <span class="fn">train_test_split</span>(
+    X, y,
+    test_size=<span class="nm">0.2</span>,       <span class="cm"># 20% held out for evaluation</span>
+    random_state=<span class="nm">42</span>,    <span class="cm"># reproducible split</span>
+    stratify=y          <span class="cm"># keep class ratios the same in both halves</span>
+)</pre>
+      </div>
+      <p><code>stratify=y</code> is important: if DDoS is 15% of the dataset, it will be
+      exactly 15% in both train and test — not accidentally 5% in one and 25% in the other.</p>
+
+      <h3>What is a Random Forest?</h3>
+      <p>A Random Forest is an ensemble of Decision Trees.</p>
+
+      <p>A single <strong>Decision Tree</strong> splits data by asking yes/no questions:</p>
+      <div class="arch-box" style="font-size:12px; line-height:2;">
+<span class="hy">Is dst_port == 22?</span>
+  YES ──▶ <span class="hy">Is fwd_packets &gt; 300?</span>
+              YES ──▶ <span class="hr">BruteForce</span> (high confidence)
+              NO  ──▶ <span class="hg">BENIGN</span>    (moderate confidence)
+  NO  ──▶ <span class="hy">Is duration &lt; 0.001?</span>
+              YES ──▶ <span class="hr">PortScan</span>   (likely)
+              NO  ──▶ continue splitting...
+      </div>
+
+      <p>A <strong>Random Forest</strong> builds <code>n_estimators=100</code> such trees, each trained
+      on a random subset of data and features. For a new flow, all 100 trees vote, and the majority wins.
+      This dramatically reduces overfitting.</p>
+
+      <div class="code-block">
+        <div class="code-label">ml/train_model.py</div>
+        <pre>clf = <span class="cl">RandomForestClassifier</span>(
+    n_estimators=<span class="nm">100</span>,   <span class="cm"># 100 decision trees</span>
+    max_depth=<span class="nm">20</span>,       <span class="cm"># each tree max 20 levels deep</span>
+    n_jobs=<span class="nm">-1</span>,          <span class="cm"># use ALL CPU cores in parallel</span>
+    random_state=<span class="nm">42</span>     <span class="cm"># reproducible results</span>
+)
+clf.<span class="fn">fit</span>(X_train, y_train)</pre>
+      </div>
+
+      <h3>Saving model artifacts with Pickle</h3>
+      <div class="code-block">
+        <div class="code-label">ml/train_model.py</div>
+        <pre><span class="kw">import</span> pickle
+
+<span class="cm"># Save</span>
+<span class="fn">pickle</span>.<span class="fn">dump</span>(clf,     <span class="fn">open</span>(<span class="st">"model/model.pkl"</span>,         <span class="st">"wb"</span>))
+<span class="fn">pickle</span>.<span class="fn">dump</span>(scaler,  <span class="fn">open</span>(<span class="st">"model/scaler.pkl"</span>,        <span class="st">"wb"</span>))
+<span class="fn">pickle</span>.<span class="fn">dump</span>(le,      <span class="fn">open</span>(<span class="st">"model/label_encoder.pkl"</span>, <span class="st">"wb"</span>))
+
+<span class="cm"># Load back later in backend/app.py</span>
+clf    = <span class="fn">pickle</span>.<span class="fn">load</span>(<span class="fn">open</span>(<span class="st">"model/model.pkl"</span>, <span class="st">"rb"</span>))
+scaler = <span class="fn">pickle</span>.<span class="fn">load</span>(<span class="fn">open</span>(<span class="st">"model/scaler.pkl"</span>, <span class="st">"rb"</span>))</pre>
+      </div>
+
+      <div class="callout callout-info">
+        <span class="callout-icon">💡</span>
+        <div class="callout-body">
+          <div class="callout-title">Why save the scaler and label encoder too?</div>
+          <p class="callout-text">At inference time, you MUST scale live data using the exact same
+          mean/std computed during training. If you refit, the scaling will be different and
+          predictions will be garbage. Saving and reloading these objects guarantees consistency.</p>
+        </div>
+      </div>
+
+      <h3>How to read the Classification Report</h3>
+      <div class="code-block">
+        <div class="code-label">output of classification_report()</div>
+        <pre>              <span class="cl">precision</span>   <span class="cl">recall</span>   <span class="cl">f1-score</span>
+
+<span class="hg">BENIGN        </span>     <span class="nm">0.99</span>      <span class="nm">0.99</span>      <span class="nm">0.99</span>
+<span class="hr">DDoS          </span>     <span class="nm">0.97</span>      <span class="nm">0.95</span>      <span class="nm">0.96</span>
+<span class="hr">PortScan      </span>     <span class="nm">0.98</span>      <span class="nm">0.99</span>      <span class="nm">0.98</span>
+<span class="hr">BruteForce    </span>     <span class="nm">0.94</span>      <span class="nm">0.92</span>      <span class="nm">0.93</span></pre>
+      </div>
+      <table>
+        <thead><tr><th>Metric</th><th>What it means</th><th>Security importance</th></tr></thead>
+        <tbody>
+          <tr><td>Precision</td><td>Of all flows we called DDoS, how many actually were?</td><td>Avoid false alarms</td></tr>
+          <tr><td>Recall</td><td>Of all actual DDoS flows, how many did we catch?</td><td>⭐ More critical — missing an attack is worse than a false alarm</td></tr>
+          <tr><td>F1-Score</td><td>Harmonic mean of precision and recall</td><td>Best single number to optimise</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════ SECTION 6 ══════════ -->
+    <div class="section" id="s6">
+      <div class="section-header">
+        <div class="section-icon icon-yellow">📡</div>
+        <div>
+          <div class="section-title">Apache Kafka</div>
+          <div class="section-subtitle">High-speed message streaming between services</div>
+        </div>
+      </div>
+
+      <p>Apache Kafka is a <strong>distributed message broker</strong> — a high-speed pipeline
+      for streaming data between systems. Think of it as a postal system for data:</p>
+
+      <div class="flow" style="margin-bottom: 24px;">
+        <div class="flow-step">Producer<br><small style="font-weight:400;color:#6366f1">writes messages</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Kafka Topic<br><small style="font-weight:400;color:#6366f1">message queue</small></div>
+        <div class="flow-arrow">→</div>
+        <div class="flow-step">Consumer<br><small style="font-weight:400;color:#6366f1">reads messages</small></div>
+      </div>
+
+      <h3>Why not just use a database or REST calls?</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Problem at high volume</th></tr></thead>
+        <tbody>
+          <tr><td>REST API (one HTTP request per flow)</td><td>Server gets overwhelmed at 100,000 flows/sec</td></tr>
+          <tr><td>Database polling (check every second)</td><td>Slow, adds heavy DB load, not real-time</td></tr>
+          <tr><td><strong>Kafka</strong></td><td>✅ Handles millions of events/sec; consumers read at their own pace without overloading the producer</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Core Kafka concepts</h3>
+      <table>
+        <thead><tr><th>Term</th><th>Analogy</th><th>In CloudGuard</th></tr></thead>
+        <tbody>
+          <tr><td>Topic</td><td>A named channel (like a YouTube channel)</td><td><code>network-flows</code> — all flow events go here</td></tr>
+          <tr><td>Producer</td><td>Someone posting videos</td><td><code>kafka_producer.py</code></td></tr>
+          <tr><td>Consumer</td><td>A subscriber watching videos</td><td><code>backend/app.py</code> (not yet implemented)</td></tr>
+          <tr><td>Broker</td><td>YouTube's servers</td><td>One Kafka server on port 9092</td></tr>
+          <tr><td>Zookeeper</td><td>YouTube's coordination system</td><td>Manages the Kafka broker metadata</td></tr>
+          <tr><td>Offset</td><td>Which video you last watched</td><td>Where the consumer left off — survives restarts</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Our kafka_producer.py</h3>
+      <div class="code-block">
+        <div class="code-label">backend/kafka_producer.py</div>
+        <pre>producer = <span class="cl">KafkaProducer</span>(
+    bootstrap_servers=<span class="st">'localhost:9092'</span>,
+    value_serializer=<span class="kw">lambda</span> v: json.<span class="fn">dumps</span>(v).<span class="fn">encode</span>(<span class="st">'utf-8'</span>)
+    <span class="cm"># Converts Python dict → JSON string → bytes</span>
+    <span class="cm"># Kafka only stores bytes; serialisation is your job</span>
+)
+
+flow = {
+    <span class="st">"src_ip"</span>:    random.<span class="fn">choice</span>(IPS),
+    <span class="st">"dst_port"</span>:  random.<span class="fn">choice</span>(PORTS),
+    <span class="st">"features"</span>: [<span class="fn">round</span>(random.<span class="fn">uniform</span>(<span class="nm">0</span>, <span class="nm">1000</span>), <span class="nm">2</span>) <span class="kw">for</span> _ <span class="kw">in</span> <span class="fn">range</span>(<span class="nm">20</span>)]
+    <span class="cm"># 20 floats = simulated ML feature vector</span>
+}
+producer.<span class="fn">send</span>(<span class="st">"network-flows"</span>, value=flow)</pre>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 7 ══════════ -->
+    <div class="section" id="s7">
+      <div class="section-header">
+        <div class="section-icon icon-blue">⚙️</div>
+        <div>
+          <div class="section-title">Backend API — app.py</div>
+          <div class="section-subtitle">Flask server with REST endpoints and WebSocket push</div>
+        </div>
+      </div>
+
+      <h3>Flask — routing URLs to functions</h3>
+      <div class="code-block">
+        <div class="code-label">backend/app.py</div>
+        <pre>app = <span class="cl">Flask</span>(__name__)
+
+<span class="cm"># A decorator maps a URL route to a Python function</span>
+<span class="kw">@</span>app.<span class="fn">route</span>(<span class="st">'/api/stats'</span>)
+<span class="kw">def</span> <span class="fn">get_stats</span>():
+    <span class="kw">return</span> <span class="fn">jsonify</span>(stats)
+<span class="cm"># curl http://localhost:5001/api/stats  →  {"total_flows": 52, ...}</span></pre>
+      </div>
+
+      <h3>CORS — why is it needed?</h3>
+      <div class="code-block">
+        <div class="code-label">backend/app.py</div>
+        <pre><span class="cl">CORS</span>(app)  <span class="cm"># adds: Access-Control-Allow-Origin: *</span>
+
+<span class="cm"># Without CORS:</span>
+<span class="cm"># Browser at localhost:3000 tries to call localhost:5001</span>
+<span class="cm"># Browser blocks it (Same-Origin Policy security rule)</span>
+<span class="cm"># With CORS: backend says "I allow cross-origin requests"</span></pre>
+      </div>
+
+      <h3>Threading — two things at once</h3>
+      <div class="code-block">
+        <div class="code-label">backend/app.py</div>
+        <pre><span class="cm"># Python runs one thing at a time normally.
+# We need BOTH running simultaneously:</span>
+<span class="cm">#   1. Flask handling HTTP requests
+#   2. simulate_traffic() generating alerts in a loop</span>
+
+thread = <span class="cl">threading</span>.<span class="cl">Thread</span>(target=simulate_traffic, daemon=<span class="kw">True</span>)
+thread.<span class="fn">start</span>()          <span class="cm"># starts background loop</span>
+socketio.<span class="fn">run</span>(app, ...)  <span class="cm"># starts Flask server in foreground</span>
+
+<span class="cm"># daemon=True: if main program exits, kill this thread too</span></pre>
+      </div>
+
+      <h3>WebSocket — server pushes data to browser</h3>
+      <div class="code-block">
+        <div class="code-label">backend/app.py</div>
+        <pre>socketio = <span class="cl">SocketIO</span>(app, cors_allowed_origins=<span class="st">"*"</span>)
+
+<span class="cm"># Push data to ALL connected browsers at any time:</span>
+socketio.<span class="fn">emit</span>(<span class="st">'new_alert'</span>,   alert)  <span class="cm"># fires on every detection</span>
+socketio.<span class="fn">emit</span>(<span class="st">'stats_update'</span>, stats)  <span class="cm"># fires with updated counts</span>
+
+<span class="cm"># When a browser first connects, send current state:</span>
+<span class="kw">@</span>socketio.<span class="fn">on</span>(<span class="st">'connect'</span>)
+<span class="kw">def</span> <span class="fn">handle_connect</span>():
+    <span class="fn">emit</span>(<span class="st">'stats_update'</span>, stats)</pre>
+      </div>
+
+      <h3>In-memory sliding window</h3>
+      <div class="code-block">
+        <div class="code-label">backend/app.py</div>
+        <pre>recent_alerts.<span class="fn">append</span>(alert)
+<span class="kw">if</span> <span class="fn">len</span>(recent_alerts) &gt; <span class="nm">100</span>:
+    recent_alerts.<span class="fn">pop</span>(<span class="nm">0</span>)   <span class="cm"># remove oldest, keep latest 100</span>
+
+<span class="cm"># Data lives in RAM — fast, but lost on restart
+# Production systems would use Redis or InfluxDB</span></pre>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 8 ══════════ -->
+    <div class="section" id="s8">
+      <div class="section-header">
+        <div class="section-icon icon-purple">🔌</div>
+        <div>
+          <div class="section-title">REST APIs vs WebSockets</div>
+          <div class="section-subtitle">Two ways for browser and server to communicate</div>
+        </div>
+      </div>
+
+      <div class="compare">
+        <div class="compare-card bad">
+          <h4>❌ HTTP Polling (naive approach)</h4>
+          <p>Browser asks "any new alerts?" every second.<br>
+          Server responds — even if nothing changed.<br><br>
+          At 1000 users × 1 req/sec = 1000 wasted requests/sec.
+          Latency = up to 1 full second.</p>
+        </div>
+        <div class="compare-card good">
+          <h4>✅ WebSocket (CloudGuard's approach)</h4>
+          <p>One persistent connection per user.<br>
+          Server pushes data instantly when it's ready.<br><br>
+          No wasted requests. Latency = milliseconds.
+          Dashboard feels truly live.</p>
+        </div>
+      </div>
+
+      <div class="arch-box" style="font-size:12px; line-height:2.2;">
+<span class="cm">HTTP (request-response — closes after each reply):</span>
+  Browser → "GET /api/alerts"  →  Server → response  → connection closed
+  [1 second later]
+  Browser → "GET /api/alerts"  →  Server → response  → connection closed
+
+<span class="hg">WebSocket (persistent — server pushes any time):</span>
+  Browser → handshake → connection stays open forever
+  Server  → "new_alert" event  →  Browser updates instantly
+  Server  → "stats_update"     →  Browser updates instantly
+  [connection stays open, no polling needed]
+      </div>
+
+      <h3>CloudGuard's REST endpoints (for initial load)</h3>
+      <table>
+        <thead><tr><th>Method</th><th>Endpoint</th><th>Returns</th></tr></thead>
+        <tbody>
+          <tr><td>GET</td><td><code>/api/health</code></td><td><code>{"status": "ok"}</code></td></tr>
+          <tr><td>GET</td><td><code>/api/stats</code></td><td>Total flows, attacks detected, benign count</td></tr>
+          <tr><td>GET</td><td><code>/api/alerts</code></td><td>Last 20 alerts</td></tr>
+          <tr><td>GET</td><td><code>/api/attack-types</code></td><td>Count per attack type (for charts)</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- ══════════ SECTION 9 ══════════ -->
+    <div class="section" id="s9">
+      <div class="section-header">
+        <div class="section-icon icon-blue">🖥️</div>
+        <div>
+          <div class="section-title">Frontend Dashboard</div>
+          <div class="section-subtitle">React — component-based real-time UI</div>
+        </div>
+      </div>
+
+      <h3>React component tree</h3>
+      <div class="arch-box" style="font-size:12px; line-height:2;">
+<span class="hi">App.js</span>  (owns state: stats, alerts, connected)
+    │
+    └── <span class="hg">Dashboard.jsx</span>  (receives data as props)
+           ├── <span class="hy">StatCard × 4</span>   (Total Flows / Attacks / Benign / Rate)
+           ├── <span class="hy">BarChart</span>       (attack type breakdown)
+           ├── <span class="hy">PieChart</span>       (traffic distribution)
+           └── <span class="hy">AlertsTable</span>    (live feed of last 15 alerts)
+      </div>
+
+      <h3>useState — reactive variables</h3>
+      <div class="code-block">
+        <div class="code-label">frontend/src/App.js</div>
+        <pre><span class="cm">// Creates a variable AND a setter function</span>
+<span class="kw">const</span> [stats, setStats] = <span class="fn">useState</span>({ total_flows: <span class="nm">0</span>, attacks_detected: <span class="nm">0</span> })
+
+<span class="cm">// WRONG — doesn't trigger re-render:</span>
+stats.total_flows = <span class="nm">5</span>
+
+<span class="cm">// CORRECT — React sees the change and re-renders the UI:</span>
+<span class="fn">setStats</span>(newData)</pre>
+      </div>
+
+      <h3>useEffect — connecting to the WebSocket</h3>
+      <div class="code-block">
+        <div class="code-label">frontend/src/App.js</div>
+        <pre><span class="fn">useEffect</span>(() => {
+    <span class="kw">const</span> socket = <span class="fn">io</span>(API_URL)   <span class="cm">// connect once on mount</span>
+
+    socket.<span class="fn">on</span>(<span class="st">'connect'</span>,      () => <span class="fn">setConnected</span>(<span class="kw">true</span>))
+    socket.<span class="fn">on</span>(<span class="st">'disconnect'</span>,   () => <span class="fn">setConnected</span>(<span class="kw">false</span>))
+    socket.<span class="fn">on</span>(<span class="st">'stats_update'</span>, data  => <span class="fn">setStats</span>(data))
+    socket.<span class="fn">on</span>(<span class="st">'new_alert'</span>,    alert => {
+        <span class="fn">setAlerts</span>(prev => [alert, ...prev].<span class="fn">slice</span>(<span class="nm">0</span>, <span class="nm">50</span>))
+        <span class="cm">//         ↑ prepend  ↑ spread existing   ↑ keep latest 50</span>
+    })
+
+    <span class="kw">return</span> () => socket.<span class="fn">disconnect</span>()   <span class="cm">// cleanup on unmount</span>
+}, [])  <span class="cm">// [] = run only once when component first loads</span></pre>
+      </div>
+
+      <h3>Recharts — data visualisation</h3>
+      <div class="code-block">
+        <div class="code-label">frontend/src/Dashboard.jsx</div>
+        <pre><span class="cm">// attackData is computed from stats state:</span>
+<span class="kw">const</span> attackData = <span class="cl">Object</span>.<span class="fn">entries</span>(stats.attack_breakdown)
+    .<span class="fn">map</span>(([name, value]) => ({ name, value }))
+<span class="cm">// → [{ name: "DDoS", value: 42 }, { name: "PortScan", value: 31 }, ...]</span>
+
+<span class="cm">// Recharts reads this array and draws bars automatically:</span>
+&lt;<span class="cl">BarChart</span> data={attackData}&gt;
+    &lt;<span class="cl">XAxis</span> dataKey=<span class="st">"name"</span> /&gt;
+    &lt;<span class="cl">Bar</span> dataKey=<span class="st">"value"</span> fill=<span class="st">"#6366f1"</span> /&gt;
+&lt;/<span class="cl">BarChart</span>&gt;
+<span class="cm">// When stats updates → attackData recomputes → chart re-renders ✅</span></pre>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 10 ══════════ -->
+    <div class="section" id="s10">
+      <div class="section-header">
+        <div class="section-icon icon-gray">🐳</div>
+        <div>
+          <div class="section-title">Docker &amp; Docker Compose</div>
+          <div class="section-subtitle">Running the whole system with one command</div>
+        </div>
+      </div>
+
+      <p>A <strong>container</strong> packages your app + all its dependencies into an isolated
+      unit that runs identically on any machine. No more "it works on my laptop" problems.</p>
+
+      <table>
+        <thead><tr><th>Term</th><th>Meaning</th></tr></thead>
+        <tbody>
+          <tr><td>Image</td><td>Blueprint/recipe (built from a <code>Dockerfile</code>)</td></tr>
+          <tr><td>Container</td><td>A running instance of an image (like a process from an executable)</td></tr>
+          <tr><td>Volume mount</td><td>Links a folder on your Mac into the container — files shared both ways</td></tr>
+          <tr><td>Docker Compose</td><td>Tool to define and run multiple containers together from one YAML file</td></tr>
+        </tbody>
+      </table>
+
+      <h3>Our docker-compose.yml explained</h3>
+      <div class="code-block">
+        <div class="code-label">docker-compose.yml</div>
+        <pre>services:
+  <span class="hg">zookeeper:</span>                      <span class="cm"># manages kafka broker metadata</span>
+    image: confluentinc/cp-zookeeper:7.4.0
+    ports: [<span class="st">"2181:2181"</span>]         <span class="cm"># host:container</span>
+
+  <span class="hy">kafka:</span>
+    depends_on: [zookeeper]      <span class="cm"># start zookeeper FIRST</span>
+    ports: [<span class="st">"9092:9092"</span>]
+    environment:
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      <span class="cm"># "zookeeper" resolves to that container's IP (Docker DNS)</span>
+
+  <span class="hi">backend:</span>
+    build: ./backend             <span class="cm"># build image from ./backend/Dockerfile</span>
+    depends_on: [kafka]
+    volumes:
+      - ./backend/model:/app/model  <span class="cm"># share model .pkl files into container</span>
+
+  <span class="hr">frontend:</span>
+    build: ./frontend
+    depends_on: [backend]
+    environment:
+      REACT_APP_API_URL: http://localhost:5001</pre>
+      </div>
+
+      <div class="callout callout-success">
+        <span class="callout-icon">🚀</span>
+        <div class="callout-body">
+          <div class="callout-title">One command to run everything</div>
+          <p class="callout-text"><code>docker-compose up --build</code> — builds all images, starts all 4
+          containers in the right order, and wires their networking together automatically.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 11 ══════════ -->
+    <div class="section" id="s11">
+      <div class="section-header">
+        <div class="section-icon icon-purple">🔄</div>
+        <div>
+          <div class="section-title">End-to-End Data Flow</div>
+          <div class="section-subtitle">A complete trace from CSV to dashboard pixel</div>
+        </div>
+      </div>
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num">1</div>
+          <div class="step-body">
+            <div class="step-title">Train (runs once, offline)</div>
+            <div class="step-desc">Download CIC-IDS2017 CSV → <code>preprocess.py</code> cleans &amp; scales it →
+            <code>train_model.py</code> trains RandomForest on 80% of data → saves
+            <code>model.pkl</code>, <code>scaler.pkl</code>, <code>label_encoder.pkl</code></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">2</div>
+          <div class="step-body">
+            <div class="step-title">Stream (runs continuously)</div>
+            <div class="step-desc"><code>kafka_producer.py</code> generates a simulated flow every ~1 second
+            with 20 feature values → <code>producer.send("network-flows", flow)</code> →
+            Kafka stores the message in the topic queue</div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">3</div>
+          <div class="step-body">
+            <div class="step-title">Infer (runs continuously — future implementation)</div>
+            <div class="step-desc"><code>backend/app.py</code> Kafka consumer reads next flow →
+            <code>scaler.transform([flow.features])</code> → <code>model.predict()</code> →
+            <code>label_encoder.inverse_transform()</code> → builds alert dict →
+            <code>socketio.emit('new_alert', alert)</code></div>
+          </div>
+        </div>
+        <div class="step">
+          <div class="step-num">4</div>
+          <div class="step-body">
+            <div class="step-title">Display (runs in browser)</div>
+            <div class="step-desc">React <code>App.js</code> receives <code>new_alert</code> event →
+            <code>setAlerts([alert, ...prev])</code> → React re-renders Dashboard →
+            table row appears, chart animates, counter increments — all in &lt;50ms</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="callout callout-warning">
+        <span class="callout-icon">🔧</span>
+        <div class="callout-body">
+          <div class="callout-title">Current state (simulation)</div>
+          <p class="callout-text">Steps 2 &amp; 3 are currently simulated — <code>backend/app.py</code> uses
+          <code>random.choices()</code> and <code>random.uniform()</code> instead of Kafka + real ML
+          inference. This lets the dashboard work end-to-end while the ML pipeline is still being built.
+          The architecture is identical — only the data source changes when you wire it up for real.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- ══════════ SECTION 12 ══════════ -->
+    <div class="section" id="s12">
+      <div class="section-header">
+        <div class="section-icon icon-gray">📖</div>
+        <div>
+          <div class="section-title">Key Terms Glossary</div>
+          <div class="section-subtitle">Quick reference for every concept in this project</div>
+        </div>
+      </div>
+
+      <div class="glossary">
+        <div class="gloss-item"><div class="gloss-term">IDS</div><div class="gloss-def">Intrusion Detection System — monitors network for malicious activity</div></div>
+        <div class="gloss-item"><div class="gloss-term">Network flow</div><div class="gloss-def">Statistical summary of a connection (not raw packets)</div></div>
+        <div class="gloss-item"><div class="gloss-term">CIC-IDS2017</div><div class="gloss-def">Standard academic dataset of 2.8M labelled network flows</div></div>
+        <div class="gloss-item"><div class="gloss-term">Random Forest</div><div class="gloss-def">Ensemble of 100 decision trees that vote on a classification</div></div>
+        <div class="gloss-item"><div class="gloss-term">LabelEncoder</div><div class="gloss-def">Converts text class names → integers for ML</div></div>
+        <div class="gloss-item"><div class="gloss-term">StandardScaler</div><div class="gloss-def">Normalises features to mean=0, std=1</div></div>
+        <div class="gloss-item"><div class="gloss-term">Data leakage</div><div class="gloss-def">Using test/future data during training — makes accuracy fake</div></div>
+        <div class="gloss-item"><div class="gloss-term">Overfitting</div><div class="gloss-def">Model memorises training data but fails on new data</div></div>
+        <div class="gloss-item"><div class="gloss-term">Pickle</div><div class="gloss-def">Python's way of saving/loading any object to/from disk</div></div>
+        <div class="gloss-item"><div class="gloss-term">Stratify</div><div class="gloss-def">Keep class ratios identical in train and test splits</div></div>
+        <div class="gloss-item"><div class="gloss-term">Precision</div><div class="gloss-def">Of predicted attacks, fraction that were truly attacks</div></div>
+        <div class="gloss-item"><div class="gloss-term">Recall</div><div class="gloss-def">Of real attacks, fraction that were correctly caught</div></div>
+        <div class="gloss-item"><div class="gloss-term">F1-Score</div><div class="gloss-def">Harmonic mean of precision and recall</div></div>
+        <div class="gloss-item"><div class="gloss-term">Kafka</div><div class="gloss-def">Distributed message broker for high-speed event streaming</div></div>
+        <div class="gloss-item"><div class="gloss-term">Topic</div><div class="gloss-def">Named channel in Kafka that producers write to and consumers read from</div></div>
+        <div class="gloss-item"><div class="gloss-term">Offset</div><div class="gloss-def">Kafka remembers where a consumer left off — no data lost on restart</div></div>
+        <div class="gloss-item"><div class="gloss-term">Flask</div><div class="gloss-def">Lightweight Python web framework for building APIs</div></div>
+        <div class="gloss-item"><div class="gloss-term">CORS</div><div class="gloss-def">Browser security policy — Flask-CORS allows cross-origin requests</div></div>
+        <div class="gloss-item"><div class="gloss-term">WebSocket</div><div class="gloss-def">Persistent two-way connection — server can push data at any time</div></div>
+        <div class="gloss-item"><div class="gloss-term">Socket.IO</div><div class="gloss-def">Wraps WebSocket with auto-reconnect and named events</div></div>
+        <div class="gloss-item"><div class="gloss-term">Daemon thread</div><div class="gloss-def">Background thread that dies when the main program exits</div></div>
+        <div class="gloss-item"><div class="gloss-term">React</div><div class="gloss-def">JS library for building component-based UIs</div></div>
+        <div class="gloss-item"><div class="gloss-term">useState</div><div class="gloss-def">React hook — reactive variable; updating it triggers re-render</div></div>
+        <div class="gloss-item"><div class="gloss-term">useEffect</div><div class="gloss-def">React hook — runs side effects (network, timers) after render</div></div>
+        <div class="gloss-item"><div class="gloss-term">Props</div><div class="gloss-def">Data passed from a parent component down to a child</div></div>
+        <div class="gloss-item"><div class="gloss-term">Docker</div><div class="gloss-def">Packages app + dependencies into isolated containers</div></div>
+        <div class="gloss-item"><div class="gloss-term">Volume mount</div><div class="gloss-def">Links a folder on your machine into a container</div></div>
+        <div class="gloss-item"><div class="gloss-term">In-memory store</div><div class="gloss-def">Data kept in RAM — fast but lost on restart</div></div>
+        <div class="gloss-item"><div class="gloss-term">Serialiser</div><div class="gloss-def">Converts data to bytes for transmission (Python dict → JSON → bytes)</div></div>
+        <div class="gloss-item"><div class="gloss-term">REST API</div><div class="gloss-def">Convention for HTTP APIs: GET=read, POST=create, stateless</div></div>
+      </div>
+    </div>
+
+  </div><!-- /content -->
+
+  <!-- ════════════════════ FOOTER ════════════════════ -->
+  <div class="footer">
+    <strong>CloudGuard</strong> — Cloud Computing Course B22EF0604 &nbsp;·&nbsp;
+    Open <code>CONCEPTS.html</code> in any browser to read this guide
+  </div>
+
+</div>
+</body>
+</html>
