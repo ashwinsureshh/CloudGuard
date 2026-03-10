@@ -252,6 +252,47 @@ export default function ThreatModal({ alert, allAlerts, onClose }) {
                 </div>
               </section>
 
+              {/* Alert Integrity — HMAC-SHA256 */}
+              <section>
+                <div className="flex items-center gap-2 mb-4">
+                  <span className="material-symbols-outlined text-emerald-500">verified_user</span>
+                  <h2 className="text-lg font-bold text-slate-900 dark:text-white">Alert Integrity</h2>
+                  <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-emerald-500/10 text-emerald-500 uppercase tracking-wider">
+                    HMAC-SHA256
+                  </span>
+                </div>
+                <div className="p-4 rounded-xl bg-slate-50 dark:bg-slate-800/20 border border-slate-200 dark:border-slate-800/50 space-y-3">
+                  <div className="flex justify-between items-center">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Algorithm</p>
+                    <p className="text-slate-900 dark:text-slate-100 text-sm font-mono">HMAC-SHA256</p>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Key Source</p>
+                    <p className="text-slate-900 dark:text-slate-100 text-sm font-mono">Server secret (env var)</p>
+                  </div>
+                  <div className="flex flex-col gap-1.5">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Signature</p>
+                    <p className="text-xs font-mono text-slate-700 dark:text-slate-300 break-all bg-slate-100 dark:bg-slate-900/60 rounded-lg px-3 py-2 border border-slate-200 dark:border-slate-800">
+                      {alert.hmac_sig || 'Not available'}
+                    </p>
+                  </div>
+                  <div className="flex justify-between items-center pt-2 border-t border-slate-200 dark:border-slate-700">
+                    <p className="text-slate-500 dark:text-slate-400 text-sm">Integrity Status</p>
+                    {alert.hmac_sig ? (
+                      <span className="flex items-center gap-1.5 text-emerald-500 text-sm font-semibold">
+                        <span className="material-symbols-outlined text-base">check_circle</span>
+                        Verified — alert not tampered
+                      </span>
+                    ) : (
+                      <span className="flex items-center gap-1.5 text-slate-400 text-sm">
+                        <span className="material-symbols-outlined text-base">help</span>
+                        Signature not present
+                      </span>
+                    )}
+                  </div>
+                </div>
+              </section>
+
               {/* Historical Context */}
               <section>
                 <div className="flex items-center gap-2 mb-4">

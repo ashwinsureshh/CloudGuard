@@ -29,6 +29,7 @@ def init_db():
                 confidence  REAL,
                 severity    TEXT,
                 is_attack   INTEGER NOT NULL DEFAULT 0,
+                hmac_sig    TEXT,
                 created_at  TEXT    DEFAULT (datetime('now'))
             )
         """)
@@ -38,15 +39,16 @@ def init_db():
         conn.close()
 
 
-def save_alert(alert: dict):
+def save_alert(alert: dict) -> int:
+    """Persist an alert and return its auto-assigned integer ID."""
     conn = sqlite3.connect(DB_PATH)
     try:
         c = conn.cursor()
         c.execute("""
             INSERT INTO alerts
                 (timestamp, src_ip, dst_ip, src_port, dst_port, protocol,
-                 attack_type, confidence, severity, is_attack)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 attack_type, confidence, severity, is_attack, hmac_sig)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             alert.get("timestamp"),
             alert.get("src_ip"),
@@ -58,8 +60,10 @@ def save_alert(alert: dict):
             alert.get("confidence"),
             alert.get("severity"),
             1 if alert.get("is_attack") else 0,
+            alert.get("hmac_sig"),
         ))
         conn.commit()
+        return c.lastrowid  # SQLite auto-increment ID
     except Exception as e:
         logger.error(f"save_alert failed: {e}")
         raise

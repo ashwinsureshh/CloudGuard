@@ -19,6 +19,7 @@ from flask import Flask, jsonify, request
 from flask_cors import CORS
 from flask_socketio import SocketIO, emit
 
+from auth import check_credentials, generate_token, require_auth, sign_alert
 from database import get_alerts, get_stats, get_total_count, init_db, save_alert
 from kafka_consumer import is_kafka_connected, start_consumer
 from model import is_model_loaded, load_model, predict
@@ -61,14 +62,16 @@ def process_flow(flow: dict):
         "confidence":  prediction["confidence"],
         "severity":    prediction["severity"],
         "is_attack":   prediction["is_attack"],
-        # Stable unique key for React — avoids undefined key={a.id} in Dashboard.jsx
-        "id":          f"{ts}_{flow.get('src_ip', '')}_{flow.get('dst_port', '')}",
     }
+    # HMAC-SHA256 integrity signature — proves alert was produced by this server
+    alert["hmac_sig"] = sign_alert(alert)
 
     try:
-        save_alert(alert)
+        # Use the SQLite auto-increment integer as the stable unique ID
+        alert["id"] = save_alert(alert)
     except Exception as e:
         logger.error(f"DB write failed: {e}")
+        alert["id"] = time.time_ns()  # fallback if DB write fails
 
     with _recent_lock:
         _recent_alerts.append(alert)
@@ -103,6 +106,7 @@ def _simulate_traffic():
 
 @app.route("/api/health")
 def health():
+    """Public endpoint — required for cloud load-balancer health checks."""
     return jsonify({
         "status":       "ok",
         "model_loaded": is_model_loaded(),
@@ -111,7 +115,33 @@ def health():
     })
 
 
+@app.route("/api/login", methods=["POST"])
+def api_login():
+    """
+    Issue a JWT after verifying credentials.
+
+    POST /api/login  { "username": "...", "password": "..." }
+    → 200  { "token": "<JWT>", "username": "...", "expires_in": 3600 }
+    → 401  { "error": "Invalid credentials" }
+    """
+    data = request.get_json(silent=True) or {}
+    username = data.get("username", "").strip()
+    password = data.get("password", "")
+
+    if not username or not password:
+        return jsonify({"error": "Username and password required"}), 400
+
+    if not check_credentials(username, password):
+        logger.warning("Failed login attempt for user: %s", username)
+        return jsonify({"error": "Invalid credentials"}), 401
+
+    token = generate_token(username)
+    logger.info("User '%s' authenticated successfully", username)
+    return jsonify({"token": token, "username": username, "expires_in": 3600})
+
+
 @app.route("/api/alerts")
+@require_auth
 def api_alerts():
     try:
         limit  = max(1, min(int(request.args.get("limit",  20)), 200))
@@ -129,6 +159,7 @@ def api_alerts():
 
 
 @app.route("/api/stats")
+@require_auth
 def api_stats():
     try:
         return jsonify(get_stats())
@@ -138,6 +169,7 @@ def api_stats():
 
 
 @app.route("/api/attack-types")
+@require_auth
 def api_attack_types():
     try:
         return jsonify(get_stats()["attack_breakdown"])

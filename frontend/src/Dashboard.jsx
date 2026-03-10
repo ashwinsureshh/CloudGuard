@@ -133,7 +133,7 @@ function DonutChart({ benign, attacks, total }) {
 }
 
 // ── Dashboard ─────────────────────────────────────────────────────────────────
-export default function Dashboard({ stats, alerts, connected, onAlertClick }) {
+export default function Dashboard({ stats, alerts, connected, onAlertClick, onLogout }) {
   const [showFilters, setShowFilters] = useState(true);
   const [page, setPage]               = useState(1);
   const [filters, setFilters]         = useState({ srcIp:'', threatId:'', dstPort:'', attackType:'', severity:'' });
@@ -279,6 +279,7 @@ export default function Dashboard({ stats, alerts, connected, onAlertClick }) {
                     { icon: 'history', label: 'Alert buffer', sub: '200 events' },
                     { icon: 'bar_chart', label: 'Chart refresh', sub: 'Real-time (WS)' },
                     { icon: 'download', label: 'Export format', sub: 'CSV' },
+                    { icon: 'verified_user', label: 'Auth', sub: 'JWT HS256 + HMAC-SHA256' },
                   ].map(({ icon, label, sub }) => (
                     <li key={label} className="flex items-center gap-3 px-4 py-3">
                       <span className="material-symbols-outlined text-slate-400 text-sm">{icon}</span>
@@ -289,6 +290,13 @@ export default function Dashboard({ stats, alerts, connected, onAlertClick }) {
                     </li>
                   ))}
                 </ul>
+                <div className="border-t border-slate-200 dark:border-slate-800 p-2">
+                  <button onClick={onLogout}
+                    className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-rose-500 hover:bg-rose-500/10 transition-colors text-sm font-semibold">
+                    <span className="material-symbols-outlined text-sm">logout</span>
+                    Sign Out
+                  </button>
+                </div>
               </div>
             )}
           </div>
