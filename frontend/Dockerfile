@@ -6,7 +6,7 @@ FROM node:20-alpine AS builder
 
 WORKDIR /app
 COPY package*.json ./
-RUN npm ci --silent
+RUN npm install --legacy-peer-deps
 COPY . .
 # In Docker, all traffic goes through Nginx on port 80 (not directly to backend:5001)
 ARG REACT_APP_API_URL=http://localhost
