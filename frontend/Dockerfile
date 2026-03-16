@@ -8,6 +8,9 @@ WORKDIR /app
 COPY package*.json ./
 RUN npm ci --silent
 COPY . .
+# In Docker, all traffic goes through Nginx on port 80 (not directly to backend:5001)
+ARG REACT_APP_API_URL=http://localhost
+ENV REACT_APP_API_URL=$REACT_APP_API_URL
 RUN npm run build
 
 # Stage 2: Serve the static build with Nginx

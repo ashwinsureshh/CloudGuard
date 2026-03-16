@@ -32,7 +32,7 @@ services:
       zookeeper:
         condition: service_healthy
     ports:
-      - "29092:29092"  # exposed to host for local testing
+      - "29092:29092"
     environment:
       KAFKA_BROKER_ID: 1
       KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
@@ -63,18 +63,18 @@ services:
   backend:
     build: ./backend
     depends_on:
-      kafka:
-        condition: service_healthy
       redis:
         condition: service_healthy
+      kafka:
+        condition: service_started   # backend has graceful Kafka fallback
     env_file: .env
     environment:
       KAFKA_BROKER: kafka:9092
       REDIS_URL: redis://redis:6379/0
     volumes:
-      - ./backend/model:/app/model          # ML model artefacts
-      - ./backend/keys:/app/keys            # RSA + AES crypto keys
-      - cloudguard_db:/app/cloudguard.db    # persistent SQLite DB
+      - ./backend/model:/app/model   # ML model artefacts
+      - ./backend/keys:/app/keys     # RSA + AES crypto keys
+      - cloudguard_db:/app           # persistent SQLite DB directory
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:5001/api/health')"]
       interval: 30s
@@ -82,9 +82,12 @@ services:
       start_period: 20s
       retries: 3
 
-  # ── Frontend — React SPA (served by Nginx) ─────────────────────────────────
+  # ── Frontend — React SPA (built with correct API URL, served by Nginx) ─────
   frontend:
-    build: ./frontend
+    build:
+      context: ./frontend
+      args:
+        REACT_APP_API_URL: http://localhost   # traffic goes through Nginx on :80
     depends_on:
       - backend
 
@@ -92,7 +95,7 @@ services:
   nginx:
     image: nginx:alpine
     ports:
-      - "80:80"        # single public entry point
+      - "80:80"
     depends_on:
       - backend
       - frontend
@@ -105,4 +108,4 @@ services:
       retries: 3
 
 volumes:
-  cloudguard_db:   # named volume — DB persists across container restarts
+  cloudguard_db:   # named volume — DB directory persists across restarts
