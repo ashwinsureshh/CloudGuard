@@ -1,6 +1,6 @@
 """
 train_model.py — Model Training for CloudGuard
-Person 1's script to train and export the intrusion detection model.
+Trains a RandomForest classifier on CIC-IDS2017 and exports model artifacts.
 """
 
 import pandas as pd
@@ -9,13 +9,14 @@ import pickle
 import os
 from sklearn.ensemble import RandomForestClassifier
 from sklearn.model_selection import train_test_split
-from sklearn.metrics import classification_report, confusion_matrix
-from preprocess import preprocess, scale_features
+from sklearn.preprocessing import StandardScaler
+from sklearn.metrics import classification_report
+from preprocess import preprocess
 
 MODEL_PATH = "../backend/model/"
 
-def train(data_file="traffic.csv"):
-    df, le = preprocess(data_file)
+def train():
+    df, le = preprocess()
 
     label_col = "label_encoded"
     feature_cols = [c for c in df.columns if c not in ["Label", label_col]]
@@ -23,13 +24,17 @@ def train(data_file="traffic.csv"):
     X = df[feature_cols].values
     y = df[label_col].values
 
+    print(f"[*] Training on {len(X):,} samples, {len(feature_cols)} features")
+
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    X_train, X_test, scaler = scale_features(X_train, X_test)
+    scaler = StandardScaler()
+    X_train = scaler.fit_transform(X_train)
+    X_test = scaler.transform(X_test)
 
-    print("[*] Training Random Forest model...")
+    print("[*] Training Random Forest model (this may take a few minutes)...")
     clf = RandomForestClassifier(
         n_estimators=100,
         max_depth=20,
@@ -53,7 +58,8 @@ def train(data_file="traffic.csv"):
     with open(os.path.join(MODEL_PATH, "feature_cols.pkl"), "wb") as f:
         pickle.dump(feature_cols, f)
 
-    print(f"[+] Model saved to {MODEL_PATH}")
+    print(f"\n[+] Model artifacts saved to {MODEL_PATH}")
+    print("    model.pkl, scaler.pkl, label_encoder.pkl, feature_cols.pkl")
 
 if __name__ == "__main__":
     train()
