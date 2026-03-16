@@ -1,10 +1,16 @@
 """
 database.py — SQLite persistence layer for CloudGuard alerts and stats.
+
+Cryptography topic demonstrated:
+  - AES-256-GCM encryption of sensitive fields (src_ip, dst_ip) at rest.
+    Even if the database file is exfiltrated, IP addresses remain unreadable.
 """
 
 import sqlite3
 import logging
 from pathlib import Path
+
+from crypto import aes_encrypt, aes_decrypt
 
 logger = logging.getLogger(__name__)
 
@@ -12,7 +18,7 @@ DB_PATH = Path(__file__).parent / "cloudguard.db"
 
 
 def init_db():
-    """Create tables if they don't exist."""
+    """Create tables and run any needed schema migrations."""
     conn = sqlite3.connect(DB_PATH)
     try:
         c = conn.cursor()
@@ -30,9 +36,16 @@ def init_db():
                 severity    TEXT,
                 is_attack   INTEGER NOT NULL DEFAULT 0,
                 hmac_sig    TEXT,
+                rsa_sig     TEXT,
                 created_at  TEXT    DEFAULT (datetime('now'))
             )
         """)
+        # Migration: add rsa_sig column if upgrading from older schema
+        try:
+            c.execute("ALTER TABLE alerts ADD COLUMN rsa_sig TEXT")
+            logger.info("Schema migrated: added rsa_sig column.")
+        except sqlite3.OperationalError:
+            pass  # column already exists
         conn.commit()
         logger.info(f"Database initialised at {DB_PATH}")
     finally:
@@ -40,19 +53,19 @@ def init_db():
 
 
 def save_alert(alert: dict) -> int:
-    """Persist an alert and return its auto-assigned integer ID."""
+    """Persist an alert with AES-encrypted IP fields. Returns auto-increment ID."""
     conn = sqlite3.connect(DB_PATH)
     try:
         c = conn.cursor()
         c.execute("""
             INSERT INTO alerts
                 (timestamp, src_ip, dst_ip, src_port, dst_port, protocol,
-                 attack_type, confidence, severity, is_attack, hmac_sig)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                 attack_type, confidence, severity, is_attack, hmac_sig, rsa_sig)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """, (
             alert.get("timestamp"),
-            alert.get("src_ip"),
-            alert.get("dst_ip"),
+            aes_encrypt(alert.get("src_ip", "")),   # AES-256-GCM encrypted at rest
+            aes_encrypt(alert.get("dst_ip", "")),   # AES-256-GCM encrypted at rest
             alert.get("src_port"),
             alert.get("dst_port"),
             alert.get("protocol"),
@@ -61,9 +74,10 @@ def save_alert(alert: dict) -> int:
             alert.get("severity"),
             1 if alert.get("is_attack") else 0,
             alert.get("hmac_sig"),
+            alert.get("rsa_sig"),
         ))
         conn.commit()
-        return c.lastrowid  # SQLite auto-increment ID
+        return c.lastrowid
     except Exception as e:
         logger.error(f"save_alert failed: {e}")
         raise
@@ -72,6 +86,7 @@ def save_alert(alert: dict) -> int:
 
 
 def get_alerts(limit: int = 20, offset: int = 0) -> list[dict]:
+    """Fetch alerts, decrypting IP fields before returning."""
     conn = sqlite3.connect(DB_PATH)
     conn.row_factory = sqlite3.Row
     try:
@@ -80,7 +95,13 @@ def get_alerts(limit: int = 20, offset: int = 0) -> list[dict]:
             "SELECT * FROM alerts ORDER BY id DESC LIMIT ? OFFSET ?",
             (limit, offset),
         )
-        return [dict(row) for row in c.fetchall()]
+        rows = []
+        for row in c.fetchall():
+            r = dict(row)
+            r["src_ip"] = aes_decrypt(r.get("src_ip", ""))  # decrypt for display
+            r["dst_ip"] = aes_decrypt(r.get("dst_ip", ""))
+            rows.append(r)
+        return rows
     finally:
         conn.close()
 

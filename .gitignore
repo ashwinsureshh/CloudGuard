@@ -37,3 +37,8 @@ Thumbs.db
 .vscode/
 .idea/
 *.swp
+
+# Secrets & generated crypto keys (never commit these)
+.env
+backend/keys/
+*.db
