@@ -62,6 +62,7 @@ limiter = Limiter(
     default_limits=["200 per minute"],
     storage_uri=REDIS_URL,
     storage_options={"socket_connect_timeout": 2},
+    in_memory_fallback_enabled=True,  # keep working when Redis is down
 )
 
 # ── Config ─────────────────────────────────────────────────────────────────────
